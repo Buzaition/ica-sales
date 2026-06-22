@@ -1,12 +1,12 @@
-import express, { type Express } from "express";
+import express from "express";
 import cors from "cors";
-import pinoHttp from "pino-http";
-import router from "./routes";
-import { logger } from "./lib/logger";
-import { sessionMiddleware } from "./middleware/session";
-import { assertSessionSecret } from "./utils/session";
+import { pinoHttp } from "pino-http";
+import router from "./routes/index.js";
+import { logger } from "./lib/logger.js";
+import { sessionMiddleware } from "./middleware/session.js";
+import { assertSessionSecret } from "./utils/session.js";
 
-const app: Express = express();
+export const app = express();
 assertSessionSecret();
 
 app.use(

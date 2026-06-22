@@ -7,10 +7,11 @@
     "dev:client": "corepack pnpm --filter @workspace/client dev",
     "dev:server": "corepack pnpm --filter @workspace/server dev",
     "build": "corepack pnpm run typecheck && corepack pnpm -r --if-present run build",
-    "typecheck": "corepack pnpm -r --if-present run typecheck"
+    "typecheck": "corepack pnpm -r --if-present run typecheck && tsc -p tsconfig.api.json --noEmit"
   },
   "private": true,
   "devDependencies": {
+    "@types/node": "catalog:",
     "prettier": "^3.8.3",
     "typescript": "~5.9.3"
   }

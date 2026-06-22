@@ -1,11 +1,11 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { LoginBodySchema } from "@workspace/shared";
-import { authenticateUser } from "../services/users";
-import { clearSessionCookie, setSessionCookie } from "../utils/session";
+import { authenticateUser } from "../services/users.js";
+import { clearSessionCookie, setSessionCookie } from "../utils/session.js";
 
-const router: IRouter = Router();
+const router = Router();
 
-router.post("/auth/login", async (req, res): Promise<void> => {
+router.post("/login", async (req, res): Promise<void> => {
   const parsed = LoginBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid Input" });
@@ -26,14 +26,14 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   res.json(user);
 });
 
-router.post("/auth/logout", async (req, res): Promise<void> => {
+router.post("/logout", async (req, res): Promise<void> => {
   clearSessionCookie(res);
   res.json({ success: true, message: "Logged out" });
 });
 
-router.get("/auth/me", async (req, res): Promise<void> => {
+router.get("/me", async (req, res): Promise<void> => {
   if (!req.authUser) {
-    res.status(401).json({ error: "Not authenticated" });
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
   res.json(req.authUser);

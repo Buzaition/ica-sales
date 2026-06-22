@@ -1,22 +1,22 @@
 import { randomUUID } from "node:crypto";
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import {
   GetLeadsQueryParamsSchema,
   SubmitLeadBodySchema,
   UpdateLeadBodySchema,
 } from "@workspace/shared";
-import { requireAdmin, requireAuth } from "../middleware/auth";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import {
   createSubmission,
   getAllSubmissions,
   getSubmissionStats,
   getSubmissionsBySalesman,
   updateSubmissionById,
-} from "../services/google-script";
+} from "../services/google-script.js";
 
-const router: IRouter = Router();
+const router = Router();
 
-router.post("/leads", requireAuth, async (req, res): Promise<void> => {
+router.post("/", requireAuth, async (req, res): Promise<void> => {
   const parsed = SubmitLeadBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid Input" });
@@ -44,7 +44,7 @@ router.post("/leads", requireAuth, async (req, res): Promise<void> => {
   }
 });
 
-router.get("/leads/my", requireAuth, async (req, res): Promise<void> => {
+router.get("/my", requireAuth, async (req, res): Promise<void> => {
   try {
     const submissions = await getSubmissionsBySalesman(req.authUser!.username);
     res.json(submissions);
@@ -54,7 +54,7 @@ router.get("/leads/my", requireAuth, async (req, res): Promise<void> => {
   }
 });
 
-router.get("/leads", requireAdmin, async (req, res): Promise<void> => {
+router.get("/", requireAdmin, async (req, res): Promise<void> => {
   const queryParsed = GetLeadsQueryParamsSchema.safeParse(req.query);
   const filters = queryParsed.success ? queryParsed.data : {};
 
@@ -67,7 +67,7 @@ router.get("/leads", requireAdmin, async (req, res): Promise<void> => {
   }
 });
 
-router.get("/leads/stats", requireAdmin, async (req, res): Promise<void> => {
+router.get("/stats", requireAdmin, async (req, res): Promise<void> => {
   try {
     const data = await getSubmissionStats();
     res.json(data);
@@ -77,7 +77,7 @@ router.get("/leads/stats", requireAdmin, async (req, res): Promise<void> => {
   }
 });
 
-router.patch("/leads/:id", requireAuth, async (req, res): Promise<void> => {
+router.patch("/:id", requireAuth, async (req, res): Promise<void> => {
   const id = String(req.params.id);
   const parsed = UpdateLeadBodySchema.safeParse(req.body);
   if (!parsed.success) {
