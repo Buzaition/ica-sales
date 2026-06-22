@@ -5,14 +5,14 @@ import {
   SubmitLeadBodySchema,
   UpdateLeadBodySchema,
 } from "@workspace/shared";
-import { requireAdmin, requireAuth } from "../middleware/auth";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import {
   createSubmission,
   getAllSubmissions,
   getSubmissionStats,
   getSubmissionsBySalesman,
   updateSubmissionById,
-} from "../services/google-script";
+} from "../services/google-script.js";
 
 const router: IRouter = Router();
 
