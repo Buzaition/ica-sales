@@ -1,9 +1,12 @@
-import type { Request, Response } from "express";
 import { getAuthUser } from "../utils/auth-user.js";
 
 type Next = (err?: unknown) => void;
+type RouteResponse = {
+  status: (code: number) => RouteResponse;
+  json: (body: unknown) => void;
+};
 
-export function requireAuth(req: Request, res: Response, next: Next): void {
+export function requireAuth(req: unknown, res: RouteResponse, next: Next): void {
   if (!getAuthUser(req)) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -11,7 +14,7 @@ export function requireAuth(req: Request, res: Response, next: Next): void {
   next();
 }
 
-export function requireAdmin(req: Request, res: Response, next: Next): void {
+export function requireAdmin(req: unknown, res: RouteResponse, next: Next): void {
   const user = getAuthUser(req);
   if (!user || user.role !== "admin") {
     res.status(401).json({ error: "Unauthorized" });

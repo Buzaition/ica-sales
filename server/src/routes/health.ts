@@ -3,7 +3,11 @@ import { HealthCheckResponseSchema } from "@workspace/shared";
 
 const router = Router();
 
-router.get("/healthz", (_req, res) => {
+type RouteResponse = {
+  json: (body: unknown) => void;
+};
+
+router.get("/healthz", (_req: unknown, res: RouteResponse) => {
   const data = HealthCheckResponseSchema.parse({ status: "ok" });
   res.json(data);
 });

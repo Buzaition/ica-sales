@@ -6,7 +6,20 @@ import { clearSessionCookie, setSessionCookie } from "../utils/session.js";
 
 const router = Router();
 
-router.post("/login", async (req, res): Promise<void> => {
+type RouteRequest = {
+  body?: unknown;
+  log: {
+    warn: (data: unknown, message?: string) => void;
+    info: (data: unknown, message?: string) => void;
+  };
+};
+
+type RouteResponse = {
+  status: (code: number) => RouteResponse;
+  json: (body: unknown) => void;
+};
+
+router.post("/login", async (req: RouteRequest, res: RouteResponse): Promise<void> => {
   const parsed = LoginBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid Input" });
@@ -27,12 +40,12 @@ router.post("/login", async (req, res): Promise<void> => {
   res.json(user);
 });
 
-router.post("/logout", async (req, res): Promise<void> => {
+router.post("/logout", async (_req: RouteRequest, res: RouteResponse): Promise<void> => {
   clearSessionCookie(res);
   res.json({ success: true, message: "Logged out" });
 });
 
-router.get("/me", async (req, res): Promise<void> => {
+router.get("/me", async (req: RouteRequest, res: RouteResponse): Promise<void> => {
   const user = getAuthUser(req);
   if (!user) {
     res.status(401).json({ error: "Unauthorized" });
