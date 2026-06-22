@@ -1,4 +1,3 @@
-import "../types/express.js";
 import { randomUUID } from "node:crypto";
 import { Router } from "express";
 import {
@@ -7,6 +6,7 @@ import {
   UpdateLeadBodySchema,
 } from "@workspace/shared";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
+import { getAuthUser } from "../utils/auth-user.js";
 import {
   createSubmission,
   getAllSubmissions,
@@ -24,7 +24,11 @@ router.post("/", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  const user = req.authUser!;
+  const user = getAuthUser(req);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const now = new Date().toISOString();
 
   try {
@@ -46,8 +50,14 @@ router.post("/", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/my", requireAuth, async (req, res): Promise<void> => {
+  const user = getAuthUser(req);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   try {
-    const submissions = await getSubmissionsBySalesman(req.authUser!.username);
+    const submissions = await getSubmissionsBySalesman(user.username);
     res.json(submissions);
   } catch (err) {
     req.log.error({ err }, "Failed to fetch user leads from Google Sheets");
@@ -95,7 +105,11 @@ router.patch("/:id", requireAuth, async (req, res): Promise<void> => {
       return;
     }
 
-    const user = req.authUser!;
+    const user = getAuthUser(req);
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     if (user.role !== "admin" && existingSubmission.salesman !== user.username) {
       res.status(403).json({ error: "You can only edit your own submissions" });
       return;

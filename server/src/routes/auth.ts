@@ -1,7 +1,7 @@
-import "../types/express.js";
 import { Router } from "express";
 import { LoginBodySchema } from "@workspace/shared";
 import { authenticateUser } from "../services/users.js";
+import { getAuthUser } from "../utils/auth-user.js";
 import { clearSessionCookie, setSessionCookie } from "../utils/session.js";
 
 const router = Router();
@@ -33,11 +33,12 @@ router.post("/logout", async (req, res): Promise<void> => {
 });
 
 router.get("/me", async (req, res): Promise<void> => {
-  if (!req.authUser) {
+  const user = getAuthUser(req);
+  if (!user) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  res.json(req.authUser);
+  res.json(user);
 });
 
 export default router;
