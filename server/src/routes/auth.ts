@@ -33,7 +33,7 @@ router.post("/auth/logout", async (req, res): Promise<void> => {
 
 router.get("/auth/me", async (req, res): Promise<void> => {
   if (!req.authUser) {
-    res.status(401).json({ error: "Not authenticated" });
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
   res.json(req.authUser);
