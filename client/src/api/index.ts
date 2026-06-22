@@ -208,7 +208,7 @@ export const useSubmitLead = <TError = ErrorType<ErrorResponse>, TContext = unkn
 
 export const getMyLeadsUrl = () => "/api/leads/my";
 export const getMyLeads = (options?: RequestInit): Promise<Lead[]> =>
-  apiFetch<Lead[]>(getMyLeadsUrl(), { ...options, method: "GET" });
+  apiFetch<unknown>(getMyLeadsUrl(), { ...options, method: "GET" }).then(normalizeLeadList);
 
 export const getMyLeadsQueryKey = () => ["/api/leads/my"] as const;
 
@@ -278,7 +278,7 @@ export const getGetLeadsUrl = (params?: GetLeadsParams) => {
 };
 
 export const getLeads = (params?: GetLeadsParams, options?: RequestInit): Promise<Lead[]> =>
-  apiFetch<Lead[]>(getGetLeadsUrl(params), { ...options, method: "GET" });
+  apiFetch<unknown>(getGetLeadsUrl(params), { ...options, method: "GET" }).then(normalizeLeadList);
 
 export const getGetLeadsQueryKey = (params?: GetLeadsParams) =>
   ["/api/leads", ...(params ? [params] : [])] as const;
@@ -305,7 +305,7 @@ export function useGetLeads<
 
 export const getGetLeadStatsUrl = () => "/api/leads/stats";
 export const getLeadStats = (options?: RequestInit): Promise<LeadStats> =>
-  apiFetch<LeadStats>(getGetLeadStatsUrl(), { ...options, method: "GET" });
+  apiFetch<unknown>(getGetLeadStatsUrl(), { ...options, method: "GET" }).then(normalizeLeadStats);
 
 export const getGetLeadStatsQueryKey = () => ["/api/leads/stats"] as const;
 
@@ -326,4 +326,61 @@ export function useGetLeadStats<
     TError
   > & { queryKey: QueryKey };
   return { ...query, queryKey };
+}
+
+function unwrapData(value: unknown): unknown {
+  if (value && typeof value === "object" && "data" in value) {
+    return (value as { data: unknown }).data;
+  }
+
+  return value;
+}
+
+function normalizeLead(value: unknown): Lead {
+  const row = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+
+  return {
+    id: String(row.id ?? ""),
+    timestamp: String(row.timestamp ?? ""),
+    salesman: String(row.salesman ?? row.repName ?? ""),
+    cxName: String(row.cxName ?? ""),
+    cxPhone: String(row.cxPhone ?? ""),
+    callSummary: String(row.callSummary ?? ""),
+    updatedAt: String(row.updatedAt ?? row.timestamp ?? ""),
+  };
+}
+
+function normalizeLeadList(value: unknown): Lead[] {
+  const data = unwrapData(value);
+  const rows = Array.isArray(data)
+    ? data
+    : data && typeof data === "object" && Array.isArray((data as { submissions?: unknown[] }).submissions)
+      ? (data as { submissions: unknown[] }).submissions
+      : data && typeof data === "object" && Array.isArray((data as { leads?: unknown[] }).leads)
+        ? (data as { leads: unknown[] }).leads
+        : [];
+
+  return rows.map(normalizeLead);
+}
+
+function normalizeLeadStats(value: unknown): LeadStats {
+  const data = unwrapData(value);
+  const stats = data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+  const bySalesmanValue = Array.isArray(stats.bySalesman)
+    ? stats.bySalesman
+    : Array.isArray(stats.perRep)
+      ? stats.perRep
+      : [];
+
+  return {
+    total: Number(stats.total ?? 0),
+    bySalesman: bySalesmanValue.map((entry) => {
+      const row = entry && typeof entry === "object" ? (entry as Record<string, unknown>) : {};
+
+      return {
+        salesman: String(row.salesman ?? row.repName ?? ""),
+        count: Number(row.count ?? 0),
+      };
+    }),
+  };
 }

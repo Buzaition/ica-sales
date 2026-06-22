@@ -32,6 +32,7 @@ export function SubmissionsTable({
     cxPhone: "",
     callSummary: "",
   });
+  const rows = Array.isArray(submissions) ? submissions : [];
 
   const startEditing = (submission: Lead) => {
     setEditingId(submission.id);
@@ -83,14 +84,14 @@ export function SubmissionsTable({
                 Loading submissions...
               </TableCell>
             </TableRow>
-          ) : !submissions || submissions.length === 0 ? (
+          ) : rows.length === 0 ? (
             <TableRow>
               <TableCell colSpan={colSpan} className="h-32 text-center text-muted-foreground">
                 {emptyMessage}
               </TableCell>
             </TableRow>
           ) : (
-            submissions.map((submission) => {
+            rows.map((submission) => {
               const isEditing = editingId === submission.id;
 
               return (

@@ -43,10 +43,19 @@ export default function AdminDashboard() {
     { query: { enabled: !!user && user.role === "admin", queryKey: getGetLeadsQueryKey(leadsParams) } }
   );
 
+  const statsBySalesman = useMemo(
+    () => (Array.isArray(stats?.bySalesman) ? stats.bySalesman : []),
+    [stats],
+  );
+
   const chartData = useMemo(() => {
-    if (!stats) return [];
-    return stats.bySalesman.map(r => ({ name: r.salesman, calls: r.count }));
-  }, [stats]);
+    return statsBySalesman.map(r => ({ name: r.salesman, calls: r.count }));
+  }, [statsBySalesman]);
+
+  const topPerformer = useMemo(
+    () => [...statsBySalesman].sort((a, b) => b.count - a.count)[0],
+    [statsBySalesman],
+  );
 
   if (isCheckingAuth || !user) {
     return <Layout><div className="flex-1 flex items-center justify-center">Loading...</div></Layout>;
@@ -88,11 +97,11 @@ export default function AdminDashboard() {
                 <Users className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                {stats?.bySalesman && stats.bySalesman.length > 0 ? (
+                {topPerformer ? (
                   <>
-                    <div className="text-2xl font-bold truncate">{[...stats.bySalesman].sort((a, b) => b.count - a.count)[0].salesman}</div>
+                    <div className="text-2xl font-bold truncate">{topPerformer.salesman}</div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {[...stats.bySalesman].sort((a, b) => b.count - a.count)[0].count} calls
+                      {topPerformer.count} calls
                     </p>
                   </>
                 ) : (
