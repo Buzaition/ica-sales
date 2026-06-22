@@ -1,12 +1,12 @@
-import { Router, type IRouter } from "express";
-import healthRouter from "./health.js";
-import authRouter from "./auth.js";
-import leadsRouter from "./leads.js";
+import { Router } from "express";
+import authRoutes from "./auth.js";
+import leadsRoutes from "./leads.js";
+import healthRoutes from "./health.js";
 
-const router: IRouter = Router();
+export const router = Router();
 
-router.use(healthRouter);
-router.use(authRouter);
-router.use(leadsRouter);
+router.use("/auth", authRoutes);
+router.use("/leads", leadsRoutes);
+router.use("/health", healthRoutes);
 
 export default router;

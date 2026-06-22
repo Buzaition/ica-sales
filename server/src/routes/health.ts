@@ -1,7 +1,7 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { HealthCheckResponseSchema } from "@workspace/shared";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.get("/healthz", (_req, res) => {
   const data = HealthCheckResponseSchema.parse({ status: "ok" });
