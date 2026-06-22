@@ -1,7 +1,7 @@
-import type { NextFunction, Request, Response } from "express";
+import type { RequestHandler } from "express";
 import { readSession } from "../utils/session.js";
 
-export function sessionMiddleware(req: Request, _res: Response, next: NextFunction): void {
+export const sessionMiddleware: RequestHandler = (req, _res, next) => {
   req.authUser = readSession(req) ?? undefined;
   next();
-}
+};
