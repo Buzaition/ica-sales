@@ -8,6 +8,12 @@ type GoogleScriptResult<T> =
       error?: string;
     };
 
+type FetchResponse = {
+  ok: boolean;
+  status: number;
+  json: () => Promise<unknown>;
+};
+
 async function callGoogleScript<T>(
   action: string,
   payload?: Record<string, unknown>,
@@ -19,12 +25,12 @@ async function callGoogleScript<T>(
   }
 
   if (method === "POST") {
-    const response = await fetch(scriptUrl, {
+    const response = (await fetch(scriptUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action, ...payload }),
       redirect: "follow",
-    });
+    })) as FetchResponse;
     if (!response.ok) {
       throw new Error(`Google Script error: ${response.status}`);
     }
@@ -38,9 +44,9 @@ async function callGoogleScript<T>(
     });
   }
 
-  const response = await fetch(`${scriptUrl}?${params.toString()}`, {
+  const response = (await fetch(`${scriptUrl}?${params.toString()}`, {
     redirect: "follow",
-  });
+  })) as FetchResponse;
   if (!response.ok) {
     throw new Error(`Google Script error: ${response.status}`);
   }
