@@ -1,4 +1,4 @@
-import { app } from "../server/src/app";
+import { app } from "../server/src/app.js";
 
 export default function handler(req: any, res: any) {
   const url = typeof req.url === "string" ? req.url : "/";

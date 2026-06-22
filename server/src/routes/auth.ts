@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { LoginBodySchema } from "@workspace/shared";
-import { authenticateUser } from "../services/users";
-import { clearSessionCookie, setSessionCookie } from "../utils/session";
+import { authenticateUser } from "../services/users.js";
+import { clearSessionCookie, setSessionCookie } from "../utils/session.js";
 
 const router: IRouter = Router();
 

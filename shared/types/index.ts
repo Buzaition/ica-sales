@@ -12,7 +12,7 @@ import {
   SubmitLeadBodySchema,
   SuccessResponseSchema,
   UpdateLeadBodySchema,
-} from "../schemas";
+} from "../schemas/index.js";
 
 export type AuthUserRole = z.infer<typeof AuthUserRoleSchema>;
 export type AuthUser = z.infer<typeof AuthUserSchema>;
