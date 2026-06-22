@@ -20,6 +20,7 @@ import type {
   SuccessResponse,
   UpdateLeadInput,
 } from "@workspace/shared";
+import { AuthUserSchema } from "@workspace/shared";
 
 type BodyType<T> = T;
 type AwaitedInput<T> = PromiseLike<T> | T;
@@ -104,12 +105,12 @@ export function useHealthCheck<
 
 export const getLoginUrl = () => "/api/auth/login";
 export const login = (loginInput: LoginInput, options?: RequestInit): Promise<AuthUser> =>
-  apiFetch<AuthUser>(getLoginUrl(), {
+  apiFetch<unknown>(getLoginUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
     body: JSON.stringify(loginInput),
-  });
+  }).then(normalizeAuthUser);
 
 export const useLogin = <TError = ErrorType<ErrorResponse>, TContext = unknown>(
   options?: {
@@ -151,7 +152,7 @@ export const useLogout = <TError = ErrorType<unknown>, TContext = unknown>(
 
 export const getGetMeUrl = () => "/api/auth/me";
 export const getMe = (options?: RequestInit): Promise<AuthUser> =>
-  apiFetch<AuthUser>(getGetMeUrl(), { ...options, method: "GET" });
+  apiFetch<unknown>(getGetMeUrl(), { ...options, method: "GET" }).then(normalizeAuthUser);
 
 export const getGetMeQueryKey = () => ["/api/auth/me"] as const;
 
@@ -334,6 +335,16 @@ function unwrapData(value: unknown): unknown {
   }
 
   return value;
+}
+
+function normalizeAuthUser(value: unknown): AuthUser {
+  const parsed = AuthUserSchema.safeParse(unwrapData(value));
+
+  if (!parsed.success) {
+    throw new Error("Invalid auth response");
+  }
+
+  return parsed.data;
 }
 
 function normalizeLead(value: unknown): Lead {

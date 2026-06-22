@@ -36,10 +36,8 @@ export default function Login() {
   });
 
   useEffect(() => {
-    if (user) {
-      if (user.role === "admin") setLocation("/admin");
-      else setLocation("/rep");
-    }
+    if (user?.role === "admin") setLocation("/admin");
+    if (user?.role === "rep") setLocation("/rep");
   }, [user, setLocation]);
 
   const onSubmit = (values: z.infer<typeof loginSchema>) => {
