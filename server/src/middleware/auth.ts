@@ -1,3 +1,4 @@
+import "../types/express.js";
 import type { NextFunction, Request, Response } from "express";
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {

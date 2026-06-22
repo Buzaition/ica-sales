@@ -1,3 +1,4 @@
+import "../types/express.js";
 import { randomUUID } from "node:crypto";
 import { Router } from "express";
 import {

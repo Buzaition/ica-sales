@@ -1,3 +1,4 @@
+import "../types/express.js";
 import { Router } from "express";
 import { LoginBodySchema } from "@workspace/shared";
 import { authenticateUser } from "../services/users.js";

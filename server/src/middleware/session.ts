@@ -1,4 +1,4 @@
-import type {} from "../types/express.js";
+import "../types/express.js";
 import type { Request, Response, NextFunction } from "express";
 import { readSession } from "../utils/session.js";
 
