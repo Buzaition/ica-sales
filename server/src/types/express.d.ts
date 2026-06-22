@@ -1,4 +1,4 @@
-import type { AuthUser } from "@workspace/shared";
+import type { AuthUser } from "../utils/session.js";
 
 declare global {
   namespace Express {

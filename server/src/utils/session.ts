@@ -2,6 +2,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Request, Response } from "express";
 import { AuthUserSchema, type AuthUser } from "@workspace/shared";
 
+export type { AuthUser };
+
 const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const SESSION_COOKIE_NAME =
   process.env.NODE_ENV === "production" ? "__Host-ica_session" : "ica_session";
