@@ -1,9 +1,9 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { LoginBodySchema } from "@workspace/shared";
 import { authenticateUser } from "../services/users.js";
 import { clearSessionCookie, setSessionCookie } from "../utils/session.js";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.post("/auth/login", async (req, res): Promise<void> => {
   const parsed = LoginBodySchema.safeParse(req.body);

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import {
   GetLeadsQueryParamsSchema,
   SubmitLeadBodySchema,
@@ -14,7 +14,7 @@ import {
   updateSubmissionById,
 } from "../services/google-script.js";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.post("/leads", requireAuth, async (req, res): Promise<void> => {
   const parsed = SubmitLeadBodySchema.safeParse(req.body);
