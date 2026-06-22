@@ -1,5 +1,4 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { Request, Response } from "express";
 import { AuthUserSchema, type AuthUser } from "@workspace/shared";
 
 export type { AuthUser };
@@ -10,6 +9,17 @@ const SESSION_COOKIE_NAME =
 
 type SessionPayload = AuthUser & {
   exp: number;
+};
+
+type RequestLike = {
+  headers?: {
+    cookie?: string | string[];
+  };
+};
+
+type ResponseLike = {
+  getHeader?: (name: string) => number | string | string[] | undefined;
+  setHeader?: (name: string, value: string | string[]) => void;
 };
 
 function getSessionSecret(): string {
@@ -45,6 +55,44 @@ function parseCookies(cookieHeader: string | undefined): Record<string, string> 
   }, {});
 }
 
+function getCookieHeader(req: unknown): string | undefined {
+  const cookie = (req as RequestLike).headers?.cookie;
+  return Array.isArray(cookie) ? cookie.join("; ") : cookie;
+}
+
+function appendSetCookieHeader(res: unknown, cookie: string): void {
+  const response = res as ResponseLike;
+  if (typeof response.setHeader !== "function") {
+    throw new Error("Response object does not support setting headers.");
+  }
+
+  const existing = response.getHeader?.("Set-Cookie");
+  const nextCookies =
+    typeof existing === "string"
+      ? [existing, cookie]
+      : Array.isArray(existing)
+        ? [...existing, cookie]
+        : [cookie];
+
+  response.setHeader("Set-Cookie", nextCookies);
+}
+
+function serializeSessionCookie(value: string, maxAgeMs: number): string {
+  const parts = [
+    `${SESSION_COOKIE_NAME}=${encodeURIComponent(value)}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${Math.floor(maxAgeMs / 1000)}`,
+  ];
+
+  if (process.env.NODE_ENV === "production") {
+    parts.push("Secure");
+  }
+
+  return parts.join("; ");
+}
+
 export function createSessionToken(user: AuthUser): string {
   const payload: SessionPayload = {
     ...user,
@@ -75,26 +123,15 @@ export function verifySessionToken(token: string | undefined): AuthUser | null {
   }
 }
 
-export function readSession(req: Request): AuthUser | null {
-  const cookies = parseCookies(req.headers.cookie);
+export function readSession(req: unknown): AuthUser | null {
+  const cookies = parseCookies(getCookieHeader(req));
   return verifySessionToken(cookies[SESSION_COOKIE_NAME]);
 }
 
-export function setSessionCookie(res: Response, user: AuthUser): void {
-  res.cookie(SESSION_COOKIE_NAME, createSessionToken(user), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: SESSION_MAX_AGE_MS,
-    path: "/",
-  });
+export function setSessionCookie(res: unknown, user: AuthUser): void {
+  appendSetCookieHeader(res, serializeSessionCookie(createSessionToken(user), SESSION_MAX_AGE_MS));
 }
 
-export function clearSessionCookie(res: Response): void {
-  res.clearCookie(SESSION_COOKIE_NAME, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-  });
+export function clearSessionCookie(res: unknown): void {
+  appendSetCookieHeader(res, serializeSessionCookie("", 0));
 }
