@@ -1,5 +1,5 @@
 {
-  "installCommand": "corepack enable && corepack pnpm install --no-frozen-lockfile",
+  "installCommand": "corepack enable && corepack pnpm install",
   "buildCommand": "corepack enable && corepack pnpm run build",
   "outputDirectory": "client/dist/public",
   "rewrites": [
