@@ -1,17 +1,25 @@
-import type { RequestHandler } from "express";
+import type * as Express from "express";
 
-export const requireAuth: RequestHandler = (req, res, next) => {
+export function requireAuth(
+  req: Express.Request,
+  res: Express.Response,
+  next: Express.NextFunction,
+): void {
   if (!req.authUser) {
     res.status(401).json({ error: "Not authenticated" });
     return;
   }
   next();
-};
+}
 
-export const requireAdmin: RequestHandler = (req, res, next) => {
+export function requireAdmin(
+  req: Express.Request,
+  res: Express.Response,
+  next: Express.NextFunction,
+): void {
   if (!req.authUser || req.authUser.role !== "admin") {
     res.status(401).json({ error: "Admin access required" });
     return;
   }
   next();
-};
+}
