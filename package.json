@@ -1,0 +1,17 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "packageManager": "pnpm@11.8.0",
+  "license": "MIT",
+  "scripts": {
+    "dev:client": "corepack pnpm --filter @workspace/client dev",
+    "dev:server": "corepack pnpm --filter @workspace/server dev",
+    "build": "corepack pnpm run typecheck && corepack pnpm -r --if-present run build",
+    "typecheck": "corepack pnpm -r --if-present run typecheck"
+  },
+  "private": true,
+  "devDependencies": {
+    "prettier": "^3.8.3",
+    "typescript": "~5.9.3"
+  }
+}

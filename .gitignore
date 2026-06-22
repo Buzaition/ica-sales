@@ -1,0 +1,8 @@
+node_modules
+dist
+.tsbuildinfo
+.env
+server-test.out
+server-test.err
+client/dist
+server/dist

@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "noEmit": true
+  },
+  "include": ["index.ts", "schemas/**/*.ts", "types/**/*.ts"]
+}
