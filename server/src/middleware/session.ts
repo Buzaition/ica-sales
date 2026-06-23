@@ -8,6 +8,6 @@ export function sessionMiddleware(
   _res: Response,
   next: Next,
 ): void {
-  setRequestAuthUser(req, readSession(req));
+  setRequestAuthUser(req, readSession(req) ?? undefined);
   next();
 }

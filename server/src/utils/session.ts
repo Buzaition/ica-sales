@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { Request, Response } from "express";
+import type { Request as ExpressRequest, Response as ExpressResponse } from "express";
 import { AuthUserSchema, type AuthUser } from "@workspace/shared";
 
 const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -10,7 +10,7 @@ type SessionPayload = AuthUser & {
   exp: number;
 };
 
-type AuthenticatedRequest = Request & {
+type RequestWithAuthUser = ExpressRequest & {
   authUser?: AuthUser;
 };
 
@@ -77,20 +77,25 @@ export function verifySessionToken(token: string | undefined): AuthUser | null {
   }
 }
 
-export function readSession(req: Request): AuthUser | null {
+function getSessionTokenFromRequest(req: ExpressRequest): string | undefined {
   const cookies = parseCookies(req.headers.cookie);
-  return verifySessionToken(cookies[SESSION_COOKIE_NAME]);
+  return cookies[SESSION_COOKIE_NAME];
 }
 
-export function getRequestAuthUser(req: Request): AuthUser | undefined {
-  return (req as AuthenticatedRequest).authUser;
+export function readSession(req: ExpressRequest): AuthUser | null {
+  const token = getSessionTokenFromRequest(req);
+  return verifySessionToken(token);
 }
 
-export function setRequestAuthUser(req: Request, user: AuthUser | null): void {
-  (req as AuthenticatedRequest).authUser = user ?? undefined;
+export function getRequestAuthUser(req: ExpressRequest): AuthUser | undefined {
+  return (req as RequestWithAuthUser).authUser;
 }
 
-export function setSessionCookie(res: Response, user: AuthUser): void {
+export function setRequestAuthUser(req: ExpressRequest, user: AuthUser | undefined): void {
+  (req as RequestWithAuthUser).authUser = user;
+}
+
+export function setSessionCookie(res: ExpressResponse, user: AuthUser): void {
   res.cookie(SESSION_COOKIE_NAME, createSessionToken(user), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -100,7 +105,7 @@ export function setSessionCookie(res: Response, user: AuthUser): void {
   });
 }
 
-export function clearSessionCookie(res: Response): void {
+export function clearSessionCookie(res: ExpressResponse): void {
   res.clearCookie(SESSION_COOKIE_NAME, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
