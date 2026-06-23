@@ -11,8 +11,9 @@ function normalizeUsername(username: string): AllowedUsername | null {
 }
 
 function isPasswordMatch(actual: string, expected: string): boolean {
-  const actualBuffer = Buffer.from(actual);
-  const expectedBuffer = Buffer.from(expected);
+  const encoder = new TextEncoder();
+  const actualBuffer = encoder.encode(actual);
+  const expectedBuffer = encoder.encode(expected);
   return (
     actualBuffer.length === expectedBuffer.length &&
     timingSafeEqual(actualBuffer, expectedBuffer)

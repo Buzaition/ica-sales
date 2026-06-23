@@ -53,8 +53,9 @@ function sign(value: string): string {
 }
 
 function constantTimeEqual(a: string, b: string): boolean {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
+  const encoder = new TextEncoder();
+  const left = encoder.encode(a);
+  const right = encoder.encode(b);
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
