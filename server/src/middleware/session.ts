@@ -1,10 +1,10 @@
-import type * as Express from "express";
+import type { NextFunction, Request, Response } from "express";
 import { readSession } from "../utils/session.js";
 
 export function sessionMiddleware(
-  req: Express.Request,
-  _res: Express.Response,
-  next: Express.NextFunction,
+  req: Request,
+  _res: Response,
+  next: NextFunction,
 ): void {
   req.authUser = readSession(req) ?? undefined;
   next();
