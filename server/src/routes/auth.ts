@@ -2,7 +2,12 @@ import { Router } from "express";
 import { LoginBodySchema } from "@workspace/shared";
 import { authenticateUser } from "../services/users.js";
 import type { RouteRequest, RouteResponse } from "../types/http.js";
-import { clearSessionCookie, getRequestAuthUser, setSessionCookie } from "../utils/session.js";
+import {
+  clearSessionCookie,
+  getRequestAuthUser,
+  isSessionConfigured,
+  setSessionCookie,
+} from "../utils/session.js";
 
 const router = Router();
 
@@ -21,6 +26,12 @@ router.post("/auth/login", async (req: unknown, res: unknown): Promise<void> => 
   if (!user) {
     request.log.warn({ username }, "Failed login attempt");
     response.status(401).json({ error: "Invalid Input" });
+    return;
+  }
+
+  if (!isSessionConfigured()) {
+    request.log.error({ username }, "SESSION_SECRET is not configured");
+    response.status(500).json({ error: "Server authentication is not configured" });
     return;
   }
 

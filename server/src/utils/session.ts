@@ -44,6 +44,10 @@ export function assertSessionSecret(): void {
   getSessionSecret();
 }
 
+export function isSessionConfigured(): boolean {
+  return Boolean(process.env.SESSION_SECRET);
+}
+
 function sign(value: string): string {
   return createHmac("sha256", getSessionSecret()).update(value).digest("base64url");
 }
@@ -103,7 +107,11 @@ function getSessionTokenFromRequest(req: unknown): string | undefined {
 
 export function readSession(req: unknown): AuthUser | null {
   const token = getSessionTokenFromRequest(req);
-  return verifySessionToken(token);
+  try {
+    return verifySessionToken(token);
+  } catch {
+    return null;
+  }
 }
 
 export function getRequestAuthUser(req: unknown): AuthUser | undefined {

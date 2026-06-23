@@ -4,10 +4,8 @@ import { pinoHttp } from "pino-http";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 import { sessionMiddleware } from "./middleware/session.js";
-import { assertSessionSecret } from "./utils/session.js";
 
 const app = express();
-assertSessionSecret();
 
 app.use(
   pinoHttp({
