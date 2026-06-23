@@ -1,5 +1,4 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { Request as ExpressRequest, Response as ExpressResponse } from "express";
 import { AuthUserSchema, type AuthUser } from "@workspace/shared";
 
 const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -10,7 +9,26 @@ type SessionPayload = AuthUser & {
   exp: number;
 };
 
-type RequestWithAuthUser = ExpressRequest & {
+type CookieRequest = {
+  headers?: {
+    cookie?: string | string[];
+  };
+};
+
+type CookieOptions = {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: "lax";
+  maxAge?: number;
+  path: string;
+};
+
+type CookieResponse = {
+  cookie(name: string, value: string, options: CookieOptions): unknown;
+  clearCookie(name: string, options: Omit<CookieOptions, "maxAge">): unknown;
+};
+
+type RequestWithAuthUser = {
   authUser?: AuthUser;
 };
 
@@ -77,26 +95,27 @@ export function verifySessionToken(token: string | undefined): AuthUser | null {
   }
 }
 
-function getSessionTokenFromRequest(req: ExpressRequest): string | undefined {
-  const cookies = parseCookies(req.headers.cookie);
+function getSessionTokenFromRequest(req: unknown): string | undefined {
+  const cookieHeader = (req as CookieRequest).headers?.cookie;
+  const cookies = parseCookies(Array.isArray(cookieHeader) ? cookieHeader.join(";") : cookieHeader);
   return cookies[SESSION_COOKIE_NAME];
 }
 
-export function readSession(req: ExpressRequest): AuthUser | null {
+export function readSession(req: unknown): AuthUser | null {
   const token = getSessionTokenFromRequest(req);
   return verifySessionToken(token);
 }
 
-export function getRequestAuthUser(req: ExpressRequest): AuthUser | undefined {
+export function getRequestAuthUser(req: unknown): AuthUser | undefined {
   return (req as RequestWithAuthUser).authUser;
 }
 
-export function setRequestAuthUser(req: ExpressRequest, user: AuthUser | undefined): void {
+export function setRequestAuthUser(req: unknown, user: AuthUser | undefined): void {
   (req as RequestWithAuthUser).authUser = user;
 }
 
-export function setSessionCookie(res: ExpressResponse, user: AuthUser): void {
-  res.cookie(SESSION_COOKIE_NAME, createSessionToken(user), {
+export function setSessionCookie(res: unknown, user: AuthUser): void {
+  (res as CookieResponse).cookie(SESSION_COOKIE_NAME, createSessionToken(user), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -105,8 +124,8 @@ export function setSessionCookie(res: ExpressResponse, user: AuthUser): void {
   });
 }
 
-export function clearSessionCookie(res: ExpressResponse): void {
-  res.clearCookie(SESSION_COOKIE_NAME, {
+export function clearSessionCookie(res: unknown): void {
+  (res as CookieResponse).clearCookie(SESSION_COOKIE_NAME, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
