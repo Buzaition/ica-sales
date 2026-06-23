@@ -6,6 +6,7 @@ import {
   UpdateLeadBodySchema,
 } from "@workspace/shared";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
+import { getRequestAuthUser } from "../utils/session.js";
 import {
   createSubmission,
   getAllSubmissions,
@@ -23,7 +24,11 @@ router.post("/leads", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  const user = req.authUser!;
+  const user = getRequestAuthUser(req);
+  if (!user) {
+    res.status(401).json({ error: "Not authenticated" });
+    return;
+  }
   const now = new Date().toISOString();
 
   try {
@@ -45,8 +50,14 @@ router.post("/leads", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/leads/my", requireAuth, async (req, res): Promise<void> => {
+  const user = getRequestAuthUser(req);
+  if (!user) {
+    res.status(401).json({ error: "Not authenticated" });
+    return;
+  }
+
   try {
-    const submissions = await getSubmissionsBySalesman(req.authUser!.username);
+    const submissions = await getSubmissionsBySalesman(user.username);
     res.json(submissions);
   } catch (err) {
     req.log.error({ err }, "Failed to fetch user leads from Google Sheets");
@@ -94,7 +105,11 @@ router.patch("/leads/:id", requireAuth, async (req, res): Promise<void> => {
       return;
     }
 
-    const user = req.authUser!;
+    const user = getRequestAuthUser(req);
+    if (!user) {
+      res.status(401).json({ error: "Not authenticated" });
+      return;
+    }
     if (user.role !== "admin" && existingSubmission.salesman !== user.username) {
       res.status(403).json({ error: "You can only edit your own submissions" });
       return;

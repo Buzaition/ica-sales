@@ -1,11 +1,14 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
+import { getRequestAuthUser } from "../utils/session.js";
+
+type Next = (err?: unknown) => void;
 
 export function requireAuth(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: Next,
 ): void {
-  if (!req.authUser) {
+  if (!getRequestAuthUser(req)) {
     res.status(401).json({ error: "Not authenticated" });
     return;
   }
@@ -15,9 +18,10 @@ export function requireAuth(
 export function requireAdmin(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: Next,
 ): void {
-  if (!req.authUser || req.authUser.role !== "admin") {
+  const user = getRequestAuthUser(req);
+  if (!user || user.role !== "admin") {
     res.status(401).json({ error: "Admin access required" });
     return;
   }

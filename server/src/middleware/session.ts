@@ -1,11 +1,13 @@
-import type { NextFunction, Request, Response } from "express";
-import { readSession } from "../utils/session.js";
+import type { Request, Response } from "express";
+import { readSession, setRequestAuthUser } from "../utils/session.js";
+
+type Next = (err?: unknown) => void;
 
 export function sessionMiddleware(
   req: Request,
   _res: Response,
-  next: NextFunction,
+  next: Next,
 ): void {
-  req.authUser = readSession(req) ?? undefined;
+  setRequestAuthUser(req, readSession(req));
   next();
 }

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { LoginBodySchema } from "@workspace/shared";
 import { authenticateUser } from "../services/users.js";
-import { clearSessionCookie, setSessionCookie } from "../utils/session.js";
+import { clearSessionCookie, getRequestAuthUser, setSessionCookie } from "../utils/session.js";
 
 const router = Router();
 
@@ -32,11 +32,12 @@ router.post("/auth/logout", async (req, res): Promise<void> => {
 });
 
 router.get("/auth/me", async (req, res): Promise<void> => {
-  if (!req.authUser) {
+  const user = getRequestAuthUser(req);
+  if (!user) {
     res.status(401).json({ error: "Not authenticated" });
     return;
   }
-  res.json(req.authUser);
+  res.json(user);
 });
 
 export default router;

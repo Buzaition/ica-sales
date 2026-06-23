@@ -10,6 +10,10 @@ type SessionPayload = AuthUser & {
   exp: number;
 };
 
+type AuthenticatedRequest = Request & {
+  authUser?: AuthUser;
+};
+
 function getSessionSecret(): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret) {
@@ -76,6 +80,14 @@ export function verifySessionToken(token: string | undefined): AuthUser | null {
 export function readSession(req: Request): AuthUser | null {
   const cookies = parseCookies(req.headers.cookie);
   return verifySessionToken(cookies[SESSION_COOKIE_NAME]);
+}
+
+export function getRequestAuthUser(req: Request): AuthUser | undefined {
+  return (req as AuthenticatedRequest).authUser;
+}
+
+export function setRequestAuthUser(req: Request, user: AuthUser | null): void {
+  (req as AuthenticatedRequest).authUser = user ?? undefined;
 }
 
 export function setSessionCookie(res: Response, user: AuthUser): void {
